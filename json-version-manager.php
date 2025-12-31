@@ -3,7 +3,7 @@
  * Plugin Name:       JSON Version Manager
  * Plugin URI:        https://renekay.com
  * Description:       Gestiona el archivo JSON de versiones para MCP Stream WordPress desde el admin de WordPress
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            RENEKAY
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Definir constantes del plugin
-define( 'JVM_VERSION', '1.0.0' );
+define( 'JVM_VERSION', '1.0.1' );
 define( 'JVM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JVM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'JVM_JSON_FILE', JVM_PLUGIN_DIR . 'mcp-metadata.json' );
@@ -61,16 +61,20 @@ function jvm_init() {
 add_action( 'plugins_loaded', 'jvm_init', 5 );
 add_action( 'init', 'jvm_init', 5 );
 
-// Variable global para evitar duplicados
-global $jvm_menu_registered;
-$jvm_menu_registered = false;
+// Variable global para evitar duplicados - inicializada como estática
+if ( ! isset( $GLOBALS['jvm_menu_registered'] ) ) {
+	$GLOBALS['jvm_menu_registered'] = false;
+}
 
 // Añadir menú UNA SOLA VEZ - SOLUCIÓN ÚNICA
 function jvm_add_admin_menu_once() {
-	global $jvm_menu_registered;
+	// Usar GLOBALS para asegurar persistencia entre llamadas
+	if ( ! isset( $GLOBALS['jvm_menu_registered'] ) ) {
+		$GLOBALS['jvm_menu_registered'] = false;
+	}
 	
 	// Si ya se registró, no hacer nada
-	if ( $jvm_menu_registered ) {
+	if ( $GLOBALS['jvm_menu_registered'] ) {
 		return;
 	}
 
@@ -94,7 +98,7 @@ function jvm_add_admin_menu_once() {
 		foreach ( $submenu['tools.php'] as $item ) {
 			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
 				$exists_in_tools = true;
-				$jvm_menu_registered = true; // Ya existe, marcar como registrado
+				$GLOBALS['jvm_menu_registered'] = true; // Ya existe, marcar como registrado
 				return;
 			}
 		}
@@ -107,7 +111,7 @@ function jvm_add_admin_menu_once() {
 		foreach ( $menu as $item ) {
 			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
 				$exists_in_main = true;
-				$jvm_menu_registered = true; // Ya existe, marcar como registrado
+				$GLOBALS['jvm_menu_registered'] = true; // Ya existe, marcar como registrado
 				return;
 			}
 		}
@@ -138,7 +142,7 @@ function jvm_add_admin_menu_once() {
 		}
 
 		// Marcar como registrado
-		$jvm_menu_registered = true;
+		$GLOBALS['jvm_menu_registered'] = true;
 	}
 }
 
