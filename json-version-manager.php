@@ -61,8 +61,19 @@ function jvm_init() {
 add_action( 'plugins_loaded', 'jvm_init', 5 );
 add_action( 'init', 'jvm_init', 5 );
 
-// Añadir menú directamente - SOLUCIÓN DIRECTA
-function jvm_add_admin_menu_direct() {
+// Variable global para evitar duplicados
+global $jvm_menu_registered;
+$jvm_menu_registered = false;
+
+// Añadir menú UNA SOLA VEZ - SOLUCIÓN ÚNICA
+function jvm_add_admin_menu_once() {
+	global $jvm_menu_registered;
+	
+	// Si ya se registró, no hacer nada
+	if ( $jvm_menu_registered ) {
+		return;
+	}
+
 	// Verificaciones básicas
 	if ( ! function_exists( 'is_admin' ) || ! is_admin() ) {
 		return;
@@ -76,21 +87,34 @@ function jvm_add_admin_menu_direct() {
 		return;
 	}
 
-	// Verificar si ya existe
+	// Verificar si ya existe en tools
 	global $submenu;
-	$menu_exists = false;
-	
+	$exists_in_tools = false;
 	if ( isset( $submenu['tools.php'] ) && is_array( $submenu['tools.php'] ) ) {
 		foreach ( $submenu['tools.php'] as $item ) {
 			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
-				$menu_exists = true;
-				break;
+				$exists_in_tools = true;
+				$jvm_menu_registered = true; // Ya existe, marcar como registrado
+				return;
 			}
 		}
 	}
 
-	// Si no existe, añadirlo SIEMPRE
-	if ( ! $menu_exists ) {
+	// Verificar si ya existe como menú principal
+	global $menu;
+	$exists_in_main = false;
+	if ( isset( $menu ) && is_array( $menu ) ) {
+		foreach ( $menu as $item ) {
+			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
+				$exists_in_main = true;
+				$jvm_menu_registered = true; // Ya existe, marcar como registrado
+				return;
+			}
+		}
+	}
+
+	// Si no existe en ningún lado, añadirlo UNA SOLA VEZ
+	if ( ! $exists_in_tools && ! $exists_in_main ) {
 		$manager = new JSON_Version_Manager();
 		$hook = add_management_page(
 			'JSON Version Manager',
@@ -112,72 +136,14 @@ function jvm_add_admin_menu_direct() {
 				30
 			);
 		}
+
+		// Marcar como registrado
+		$jvm_menu_registered = true;
 	}
 }
 
-// Registrar en múltiples hooks y prioridades para asegurar que se ejecuta
-// También usar init para cargar antes
-add_action( 'init', function() {
-	if ( is_admin() && class_exists( 'JSON_Version_Manager' ) ) {
-		jvm_add_admin_menu_direct();
-	}
-}, 1 );
-
-add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 1 );
-add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 5 );
-add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 10 );
-add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 15 );
-add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 20 );
-add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 999 );
-
-// Añadir también como menú principal visible SIEMPRE (garantizado)
-add_action( 'admin_menu', function() {
-	if ( ! function_exists( 'is_admin' ) || ! is_admin() ) {
-		return;
-	}
-
-	if ( ! class_exists( 'JSON_Version_Manager' ) ) {
-		return;
-	}
-
-	// Verificar si ya existe en tools
-	global $submenu;
-	$exists_in_tools = false;
-	if ( isset( $submenu['tools.php'] ) && is_array( $submenu['tools.php'] ) ) {
-		foreach ( $submenu['tools.php'] as $item ) {
-			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
-				$exists_in_tools = true;
-				break;
-			}
-		}
-	}
-
-	// Verificar si ya existe como menú principal
-	global $menu;
-	$exists_in_main = false;
-	if ( isset( $menu ) && is_array( $menu ) ) {
-		foreach ( $menu as $item ) {
-			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
-				$exists_in_main = true;
-				break;
-			}
-		}
-	}
-
-	// Si no existe en ningún lado, añadirlo como menú principal (garantizado)
-	if ( ! $exists_in_tools && ! $exists_in_main ) {
-		$manager = new JSON_Version_Manager();
-		add_menu_page(
-			'JSON Version Manager',
-			'JSON Versiones',
-			'manage_options',
-			'json-version-manager',
-			array( $manager, 'render_admin_page' ),
-			'dashicons-update',
-			30
-		);
-	}
-}, 100 );
+// Registrar UNA SOLA VEZ en admin_menu con prioridad estándar
+add_action( 'admin_menu', 'jvm_add_admin_menu_once', 10 );
 
 // Hook de activación
 register_activation_hook( __FILE__, 'jvm_activate' );

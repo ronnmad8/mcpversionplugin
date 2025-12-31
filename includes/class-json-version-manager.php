@@ -24,10 +24,8 @@ class JSON_Version_Manager {
 	 * Initialize
 	 */
 	public function init() {
-		// Asegurar que el menú se añade correctamente
-		// Usar múltiples prioridades para asegurar que se ejecuta
-		add_action( 'admin_menu', array( $this, 'add_admin_menu' ), 5 );
-		add_action( 'admin_menu', array( $this, 'add_admin_menu' ), 10 );
+		// NO registrar el menú aquí - se registra en el archivo principal para evitar duplicados
+		// El menú se registra una sola vez en json-version-manager.php
 		add_action( 'admin_init', array( $this, 'register_settings' ), 10 );
 		add_action( 'admin_post_jvm_save_json', array( $this, 'save_json' ) );
 		add_action( 'admin_post_jvm_preview_json', array( $this, 'preview_json' ) );
