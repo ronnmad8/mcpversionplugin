@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.3 - 2024-12-31
+
+### Fixed
+- Corrección de warnings de constantes duplicadas en tests
+- Mejoras en la definición condicional de constantes para evitar conflictos
+
+### Changed
+- Actualización de versión en bootstrap de tests para mantener consistencia
+
 ## 1.0.2 - 2024-12-31
 
 ### Added

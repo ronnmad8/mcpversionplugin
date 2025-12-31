@@ -3,7 +3,7 @@
  * Plugin Name:       JSON Version Manager
  * Plugin URI:        https://renekay.com
  * Description:       Gestiona el archivo JSON de versiones para MCP Stream WordPress desde el admin de WordPress
- * Version:           1.0.2
+ * Version:           1.0.3
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            RENEKAY
@@ -21,12 +21,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Definir constantes del plugin
-define( 'JVM_VERSION', '1.0.2' );
-define( 'JVM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'JVM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'JVM_JSON_FILE', JVM_PLUGIN_DIR . 'mcp-metadata.json' );
-define( 'JVM_JSON_URL', JVM_PLUGIN_URL . 'mcp-metadata.json' );
+// Definir constantes del plugin (solo si no están definidas para evitar warnings en tests)
+if ( ! defined( 'JVM_VERSION' ) ) {
+	define( 'JVM_VERSION', '1.0.3' );
+}
+if ( ! defined( 'JVM_PLUGIN_DIR' ) ) {
+	define( 'JVM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+}
+if ( ! defined( 'JVM_PLUGIN_URL' ) ) {
+	define( 'JVM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+}
+if ( ! defined( 'JVM_JSON_FILE' ) ) {
+	define( 'JVM_JSON_FILE', JVM_PLUGIN_DIR . 'mcp-metadata.json' );
+}
+if ( ! defined( 'JVM_JSON_URL' ) ) {
+	define( 'JVM_JSON_URL', JVM_PLUGIN_URL . 'mcp-metadata.json' );
+}
 
 // Cargar las clases
 require_once JVM_PLUGIN_DIR . 'includes/class-error-handler.php';
