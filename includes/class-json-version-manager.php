@@ -136,6 +136,22 @@ class JSON_Version_Manager {
 			<?php
 		}
 
+		if ( isset( $_GET['license_saved'] ) && $_GET['license_saved'] === '1' ) {
+			?>
+			<div class="notice notice-success is-dismissible">
+				<p><?php esc_html_e( 'Licencia guardada correctamente.', 'json-version-manager' ); ?></p>
+			</div>
+			<?php
+		}
+
+		if ( isset( $_GET['license_deleted'] ) && $_GET['license_deleted'] === '1' ) {
+			?>
+			<div class="notice notice-success is-dismissible">
+				<p><?php esc_html_e( 'Licencia eliminada correctamente.', 'json-version-manager' ); ?></p>
+			</div>
+			<?php
+		}
+
 		if ( isset( $_GET['error'] ) ) {
 			?>
 			<div class="notice notice-error is-dismissible">
