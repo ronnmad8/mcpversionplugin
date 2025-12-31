@@ -681,5 +681,205 @@ class JSON_Version_Manager {
 		echo wp_json_encode( $json_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 		exit;
 	}
+
+	/**
+	 * Render license management section
+	 */
+	private function render_license_section() {
+		$valid_licenses = get_option( 'jvm_valid_licenses', array() );
+		$activations = get_option( 'jvm_license_activations', array() );
+		$api_url = rest_url( 'jvm/v1/verify' );
+		?>
+		<div style="background: #fff; border: 1px solid #ccd0d4; padding: 20px; margin-top: 20px;">
+			<h2 style="margin-top: 0; font-size: 18px;"><?php esc_html_e( 'Gestión de Licencias', 'json-version-manager' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Gestiona las licencias válidas para el plugin MCP Stream WordPress. El endpoint de verificación está disponible en:', 'json-version-manager' ); ?>
+			</p>
+			<p>
+				<code style="background: #f0f0f1; padding: 5px 10px; border-radius: 3px; font-size: 11px;">
+					<?php echo esc_url( $api_url ); ?>
+				</code>
+				<button type="button" class="button button-small" onclick="navigator.clipboard.writeText('<?php echo esc_js( $api_url ); ?>'); alert('<?php esc_html_e( 'URL copiada', 'json-version-manager' ); ?>');" style="margin-left: 10px;">
+					<?php esc_html_e( 'Copiar', 'json-version-manager' ); ?>
+				</button>
+			</p>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="jvm-license-form">
+				<?php wp_nonce_field( 'jvm_save_license', 'jvm_license_nonce' ); ?>
+				<input type="hidden" name="action" value="jvm_save_license">
+
+				<table class="form-table" style="margin-top: 15px;">
+					<tr>
+						<th scope="row" style="padding: 12px;">
+							<label for="license_key"><?php esc_html_e( 'Clave de Licencia', 'json-version-manager' ); ?></label>
+						</th>
+						<td style="padding: 12px;">
+							<input type="text" id="license_key" name="license_key" class="regular-text" required placeholder="LICENSE-XXXX-XXXX-XXXX">
+						</td>
+					</tr>
+					<tr>
+						<th scope="row" style="padding: 12px;">
+							<label for="customer_name"><?php esc_html_e( 'Cliente', 'json-version-manager' ); ?></label>
+						</th>
+						<td style="padding: 12px;">
+							<input type="text" id="customer_name" name="customer_name" class="regular-text" placeholder="<?php esc_attr_e( 'Nombre del cliente', 'json-version-manager' ); ?>">
+						</td>
+					</tr>
+					<tr>
+						<th scope="row" style="padding: 12px;">
+							<label for="expires"><?php esc_html_e( 'Expira', 'json-version-manager' ); ?></label>
+						</th>
+						<td style="padding: 12px;">
+							<input type="date" id="expires" name="expires" class="regular-text">
+							<p class="description"><?php esc_html_e( 'Dejar vacío para licencia sin expiración', 'json-version-manager' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row" style="padding: 12px;">
+							<label for="max_activations"><?php esc_html_e( 'Máx. Activaciones', 'json-version-manager' ); ?></label>
+						</th>
+						<td style="padding: 12px;">
+							<input type="number" id="max_activations" name="max_activations" class="small-text" value="1" min="1">
+							<p class="description"><?php esc_html_e( 'Número máximo de sitios que pueden activar esta licencia', 'json-version-manager' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
+				<p class="submit">
+					<?php submit_button( __( 'Añadir Licencia', 'json-version-manager' ), 'secondary', 'submit', false ); ?>
+				</p>
+			</form>
+
+			<?php if ( ! empty( $valid_licenses ) ) : ?>
+				<hr style="margin: 20px 0;">
+				<h3><?php esc_html_e( 'Licencias Válidas', 'json-version-manager' ); ?></h3>
+				<table class="widefat" style="margin-top: 10px;">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Clave', 'json-version-manager' ); ?></th>
+							<th><?php esc_html_e( 'Cliente', 'json-version-manager' ); ?></th>
+							<th><?php esc_html_e( 'Expira', 'json-version-manager' ); ?></th>
+							<th><?php esc_html_e( 'Activaciones', 'json-version-manager' ); ?></th>
+							<th><?php esc_html_e( 'Acciones', 'json-version-manager' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $valid_licenses as $index => $license ) : ?>
+							<tr>
+								<td><code><?php echo esc_html( substr( $license['key'], 0, 20 ) ); ?>...</code></td>
+								<td><?php echo esc_html( $license['customer'] ?? '-' ); ?></td>
+								<td>
+									<?php
+									if ( isset( $license['expires'] ) && ! empty( $license['expires'] ) ) {
+										$expires = is_numeric( $license['expires'] ) 
+											? date( 'Y-m-d', $license['expires'] ) 
+											: $license['expires'];
+										echo esc_html( $expires );
+									} else {
+										echo '<span style="color: #666;">' . esc_html__( 'Sin expiración', 'json-version-manager' ) . '</span>';
+									}
+									?>
+								</td>
+								<td>
+									<?php
+									$license_key = $license['key'];
+									$activation_count = isset( $activations[ $license_key ] ) ? count( $activations[ $license_key ] ) : 0;
+									$max_activations = isset( $license['max_activations'] ) ? intval( $license['max_activations'] ) : 1;
+									echo esc_html( $activation_count . ' / ' . $max_activations );
+									?>
+								</td>
+								<td>
+									<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;">
+										<?php wp_nonce_field( 'jvm_delete_license_' . $index, 'jvm_delete_nonce' ); ?>
+										<input type="hidden" name="action" value="jvm_delete_license">
+										<input type="hidden" name="license_index" value="<?php echo esc_attr( $index ); ?>">
+										<button type="submit" class="button button-small" onclick="return confirm('<?php esc_attr_e( '¿Estás seguro de eliminar esta licencia?', 'json-version-manager' ); ?>');">
+											<?php esc_html_e( 'Eliminar', 'json-version-manager' ); ?>
+										</button>
+									</form>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php else : ?>
+				<p style="color: #666; font-style: italic; margin-top: 15px;">
+					<?php esc_html_e( 'No hay licencias configuradas. Añade una licencia arriba.', 'json-version-manager' ); ?>
+				</p>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Save license
+	 */
+	public function save_license() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'No tienes permisos para realizar esta acción.', 'json-version-manager' ) );
+		}
+
+		if ( ! isset( $_POST['jvm_license_nonce'] ) || ! wp_verify_nonce( $_POST['jvm_license_nonce'], 'jvm_save_license' ) ) {
+			wp_die( esc_html__( 'Error de seguridad. Por favor, intenta de nuevo.', 'json-version-manager' ) );
+		}
+
+		$license_key = sanitize_text_field( $_POST['license_key'] ?? '' );
+		$customer = sanitize_text_field( $_POST['customer_name'] ?? '' );
+		$expires = sanitize_text_field( $_POST['expires'] ?? '' );
+		$max_activations = intval( $_POST['max_activations'] ?? 1 );
+
+		if ( empty( $license_key ) ) {
+			wp_safe_redirect( add_query_arg( 'page', 'json-version-manager', admin_url( 'tools.php' ) ) . '&error=' . urlencode( __( 'La clave de licencia es requerida.', 'json-version-manager' ) ) );
+			exit;
+		}
+
+		$valid_licenses = get_option( 'jvm_valid_licenses', array() );
+
+		// Verificar si ya existe
+		foreach ( $valid_licenses as $license ) {
+			if ( isset( $license['key'] ) && $license['key'] === $license_key ) {
+				wp_safe_redirect( add_query_arg( 'page', 'json-version-manager', admin_url( 'tools.php' ) ) . '&error=' . urlencode( __( 'Esta licencia ya existe.', 'json-version-manager' ) ) );
+				exit;
+			}
+		}
+
+		// Añadir nueva licencia
+		$new_license = array(
+			'key'            => $license_key,
+			'customer'       => $customer,
+			'expires'        => ! empty( $expires ) ? strtotime( $expires ) : '',
+			'max_activations' => $max_activations,
+		);
+
+		$valid_licenses[] = $new_license;
+		update_option( 'jvm_valid_licenses', $valid_licenses );
+
+		wp_safe_redirect( add_query_arg( 'page', 'json-version-manager', admin_url( 'tools.php' ) ) . '&license_saved=1' );
+		exit;
+	}
+
+	/**
+	 * Delete license
+	 */
+	public function delete_license() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'No tienes permisos para realizar esta acción.', 'json-version-manager' ) );
+		}
+
+		$index = intval( $_POST['license_index'] ?? -1 );
+		if ( $index < 0 || ! isset( $_POST['jvm_delete_nonce'] ) || ! wp_verify_nonce( $_POST['jvm_delete_nonce'], 'jvm_delete_license_' . $index ) ) {
+			wp_die( esc_html__( 'Error de seguridad. Por favor, intenta de nuevo.', 'json-version-manager' ) );
+		}
+
+		$valid_licenses = get_option( 'jvm_valid_licenses', array() );
+		if ( isset( $valid_licenses[ $index ] ) ) {
+			unset( $valid_licenses[ $index ] );
+			$valid_licenses = array_values( $valid_licenses ); // Reindexar
+			update_option( 'jvm_valid_licenses', $valid_licenses );
+		}
+
+		wp_safe_redirect( add_query_arg( 'page', 'json-version-manager', admin_url( 'tools.php' ) ) . '&license_deleted=1' );
+		exit;
+	}
 }
 
