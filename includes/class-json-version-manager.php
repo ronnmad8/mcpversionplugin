@@ -54,6 +54,11 @@ class JSON_Version_Manager {
 	 * Add admin menu
 	 */
 	public function add_admin_menu() {
+		// Solo ejecutar en admin
+		if ( ! is_admin() ) {
+			return;
+		}
+
 		// Añadir página en el menú de Herramientas
 		$hook = add_management_page(
 			__( 'JSON Version Manager', 'json-version-manager' ),
@@ -63,9 +68,8 @@ class JSON_Version_Manager {
 			array( $this, 'render_admin_page' )
 		);
 
-		// Verificar que se añadió correctamente
+		// Si no se añadió en Herramientas, intentar en el menú principal como fallback
 		if ( ! $hook ) {
-			// Si falla, intentar añadir directamente en el menú principal
 			add_menu_page(
 				__( 'JSON Version Manager', 'json-version-manager' ),
 				__( 'JSON Versiones', 'json-version-manager' ),
