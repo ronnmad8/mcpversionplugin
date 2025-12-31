@@ -116,12 +116,52 @@ function jvm_add_admin_menu_direct() {
 }
 
 // Registrar en múltiples hooks y prioridades para asegurar que se ejecuta
+// También usar init para cargar antes
+add_action( 'init', function() {
+	if ( is_admin() && class_exists( 'JSON_Version_Manager' ) ) {
+		jvm_add_admin_menu_direct();
+	}
+}, 1 );
+
 add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 1 );
 add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 5 );
 add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 10 );
 add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 15 );
 add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 20 );
 add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 999 );
+
+// Añadir también como menú principal visible SIEMPRE
+add_action( 'admin_menu', function() {
+	if ( ! is_admin() || ! class_exists( 'JSON_Version_Manager' ) ) {
+		return;
+	}
+
+	// Verificar si ya existe en tools
+	global $submenu;
+	$exists_in_tools = false;
+	if ( isset( $submenu['tools.php'] ) ) {
+		foreach ( $submenu['tools.php'] as $item ) {
+			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
+				$exists_in_tools = true;
+				break;
+			}
+		}
+	}
+
+	// Si no existe en tools, añadirlo como menú principal
+	if ( ! $exists_in_tools ) {
+		$manager = new JSON_Version_Manager();
+		add_menu_page(
+			'JSON Version Manager',
+			'JSON Versiones',
+			'manage_options',
+			'json-version-manager',
+			array( $manager, 'render_admin_page' ),
+			'dashicons-update',
+			30
+		);
+	}
+}, 100 );
 
 // Hook de activación
 register_activation_hook( __FILE__, 'jvm_activate' );
