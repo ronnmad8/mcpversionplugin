@@ -130,16 +130,20 @@ add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 15 );
 add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 20 );
 add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 999 );
 
-// Añadir también como menú principal visible SIEMPRE
+// Añadir también como menú principal visible SIEMPRE (garantizado)
 add_action( 'admin_menu', function() {
-	if ( ! is_admin() || ! class_exists( 'JSON_Version_Manager' ) ) {
+	if ( ! function_exists( 'is_admin' ) || ! is_admin() ) {
+		return;
+	}
+
+	if ( ! class_exists( 'JSON_Version_Manager' ) ) {
 		return;
 	}
 
 	// Verificar si ya existe en tools
 	global $submenu;
 	$exists_in_tools = false;
-	if ( isset( $submenu['tools.php'] ) ) {
+	if ( isset( $submenu['tools.php'] ) && is_array( $submenu['tools.php'] ) ) {
 		foreach ( $submenu['tools.php'] as $item ) {
 			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
 				$exists_in_tools = true;
@@ -148,8 +152,20 @@ add_action( 'admin_menu', function() {
 		}
 	}
 
-	// Si no existe en tools, añadirlo como menú principal
-	if ( ! $exists_in_tools ) {
+	// Verificar si ya existe como menú principal
+	global $menu;
+	$exists_in_main = false;
+	if ( isset( $menu ) && is_array( $menu ) ) {
+		foreach ( $menu as $item ) {
+			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
+				$exists_in_main = true;
+				break;
+			}
+		}
+	}
+
+	// Si no existe en ningún lado, añadirlo como menú principal (garantizado)
+	if ( ! $exists_in_tools && ! $exists_in_main ) {
 		$manager = new JSON_Version_Manager();
 		add_menu_page(
 			'JSON Version Manager',
