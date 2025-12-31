@@ -24,9 +24,10 @@ class JSON_Version_Manager {
 	 * Initialize
 	 */
 	public function init() {
-		// Usar prioridad baja para evitar conflictos con otros plugins
-		add_action( 'admin_menu', array( $this, 'add_admin_menu' ), 20 );
-		add_action( 'admin_init', array( $this, 'register_settings' ), 20 );
+		// Asegurar que el menú se añade correctamente
+		// Usar prioridad estándar para admin_menu
+		add_action( 'admin_menu', array( $this, 'add_admin_menu' ), 10 );
+		add_action( 'admin_init', array( $this, 'register_settings' ), 10 );
 		add_action( 'admin_post_jvm_save_json', array( $this, 'save_json' ) );
 		add_action( 'admin_post_jvm_preview_json', array( $this, 'preview_json' ) );
 		
@@ -53,13 +54,28 @@ class JSON_Version_Manager {
 	 * Add admin menu
 	 */
 	public function add_admin_menu() {
-		add_management_page(
+		// Añadir página en el menú de Herramientas
+		$hook = add_management_page(
 			__( 'JSON Version Manager', 'json-version-manager' ),
 			__( 'JSON Versiones', 'json-version-manager' ),
 			'manage_options',
 			'json-version-manager',
 			array( $this, 'render_admin_page' )
 		);
+
+		// Verificar que se añadió correctamente
+		if ( ! $hook ) {
+			// Si falla, intentar añadir directamente en el menú principal
+			add_menu_page(
+				__( 'JSON Version Manager', 'json-version-manager' ),
+				__( 'JSON Versiones', 'json-version-manager' ),
+				'manage_options',
+				'json-version-manager',
+				array( $this, 'render_admin_page' ),
+				'dashicons-update',
+				30
+			);
+		}
 	}
 
 	/**

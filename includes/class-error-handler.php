@@ -78,7 +78,7 @@ class JVM_Error_Handler {
 			}
 
 			// Si estamos en admin y es un error fatal, mostrar mensaje amigable
-			if ( is_admin() && in_array( $error['type'], array( E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ), true ) ) {
+			if ( function_exists( 'is_admin' ) && is_admin() && in_array( $error['type'], array( E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ), true ) ) {
 				// No hacer nada que pueda romper más la página
 				// Solo loguear
 			}

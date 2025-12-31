@@ -31,6 +31,7 @@ define( 'JVM_JSON_URL', JVM_PLUGIN_URL . 'mcp-metadata.json' );
 // Cargar las clases
 require_once JVM_PLUGIN_DIR . 'includes/class-error-handler.php';
 require_once JVM_PLUGIN_DIR . 'includes/class-json-version-manager.php';
+require_once JVM_PLUGIN_DIR . 'includes/class-admin-menu-fix.php';
 
 // Inicializar error handler primero
 JVM_Error_Handler::init();
@@ -38,6 +39,14 @@ JVM_Error_Handler::init();
 // Inicializar el plugin con manejo de errores
 function jvm_init() {
 	try {
+		// Verificar que la clase existe
+		if ( ! class_exists( 'JSON_Version_Manager' ) ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'JSON Version Manager: Clase no encontrada' );
+			}
+			return;
+		}
+
 		$manager = new JSON_Version_Manager();
 		$manager->init();
 	} catch ( Exception $e ) {
@@ -47,7 +56,35 @@ function jvm_init() {
 		}
 	}
 }
-add_action( 'plugins_loaded', 'jvm_init', 20 ); // Prioridad baja para evitar conflictos
+// Usar prioridad estándar para asegurar que se inicializa
+add_action( 'plugins_loaded', 'jvm_init', 10 );
+
+// También intentar inicializar directamente en admin_init como fallback
+function jvm_admin_init_fallback() {
+	if ( ! class_exists( 'JSON_Version_Manager' ) ) {
+		return;
+	}
+	
+	// Verificar si el menú ya está registrado
+	global $submenu;
+	$menu_exists = false;
+	
+	if ( isset( $submenu['tools.php'] ) ) {
+		foreach ( $submenu['tools.php'] as $item ) {
+			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
+				$menu_exists = true;
+				break;
+			}
+		}
+	}
+	
+	// Si no existe, crearlo
+	if ( ! $menu_exists ) {
+		$manager = new JSON_Version_Manager();
+		$manager->add_admin_menu();
+	}
+}
+add_action( 'admin_init', 'jvm_admin_init_fallback', 1 );
 
 // Hook de activación
 register_activation_hook( __FILE__, 'jvm_activate' );
