@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.4 - 2025-01-XX
+
+### Added
+- Generador automático de claves de licencia con formato LICENSE-XXXX-XXXX-XXXX
+- Botón "Generar" en el formulario de añadir licencia
+- Botón "Copiar" para cada licencia en la tabla de licencias válidas
+- Funcionalidad de copia al portapapeles con feedback visual
+- Visualización completa de claves de licencia (sin truncar)
+
+### Changed
+- Mejoras en la interfaz de gestión de licencias para mejor usabilidad
+
 ## 1.0.3 - 2024-12-31
 
 ### Fixed

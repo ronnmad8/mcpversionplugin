@@ -715,6 +715,12 @@ class JSON_Version_Manager {
 						</th>
 						<td style="padding: 12px;">
 							<input type="text" id="license_key" name="license_key" class="regular-text" required placeholder="LICENSE-XXXX-XXXX-XXXX">
+							<button type="button" id="generate-license-btn" class="button" style="margin-left: 10px;">
+								<?php esc_html_e( 'Generar', 'json-version-manager' ); ?>
+							</button>
+							<p class="description" style="margin-top: 5px;">
+								<?php esc_html_e( 'Haz clic en "Generar" para crear una nueva clave de licencia automáticamente.', 'json-version-manager' ); ?>
+							</p>
 						</td>
 					</tr>
 					<tr>
@@ -766,7 +772,16 @@ class JSON_Version_Manager {
 					<tbody>
 						<?php foreach ( $valid_licenses as $index => $license ) : ?>
 							<tr>
-								<td><code><?php echo esc_html( substr( $license['key'], 0, 20 ) ); ?>...</code></td>
+								<td>
+									<code style="background: #f0f0f1; padding: 4px 8px; border-radius: 3px; font-size: 12px; display: inline-block; margin-right: 8px;">
+										<?php echo esc_html( $license['key'] ); ?>
+									</code>
+									<button type="button" class="button button-small copy-license-btn" 
+											data-license-key="<?php echo esc_attr( $license['key'] ); ?>"
+											style="margin-left: 5px;">
+										<?php esc_html_e( 'Copiar', 'json-version-manager' ); ?>
+									</button>
+								</td>
 								<td><?php echo esc_html( $license['customer'] ?? '-' ); ?></td>
 								<td>
 									<?php
@@ -808,6 +823,107 @@ class JSON_Version_Manager {
 				</p>
 			<?php endif; ?>
 		</div>
+		
+		<script type="text/javascript">
+		(function() {
+			'use strict';
+			
+			/**
+			 * Genera una clave de licencia con formato LICENSE-XXXX-XXXX-XXXX
+			 * @returns {string} Clave de licencia generada
+			 */
+			function generateLicenseKey() {
+				const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+				let key = 'LICENSE-';
+				
+				// Generar 3 grupos de 4 caracteres cada uno
+				for (let i = 0; i < 3; i++) {
+					if (i > 0) {
+						key += '-';
+					}
+					for (let j = 0; j < 4; j++) {
+						key += chars.charAt(Math.floor(Math.random() * chars.length));
+					}
+				}
+				
+				return key;
+			}
+			
+			/**
+			 * Copia texto al portapapeles
+			 * @param {string} text Texto a copiar
+			 * @returns {Promise} Promise que se resuelve cuando se copia
+			 */
+			function copyToClipboard(text) {
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					return navigator.clipboard.writeText(text).then(function() {
+						return true;
+					}).catch(function(err) {
+						console.error('Error al copiar:', err);
+						return false;
+					});
+				} else {
+					// Fallback para navegadores antiguos
+					const textArea = document.createElement('textarea');
+					textArea.value = text;
+					textArea.style.position = 'fixed';
+					textArea.style.left = '-999999px';
+					textArea.style.top = '-999999px';
+					document.body.appendChild(textArea);
+					textArea.focus();
+					textArea.select();
+					try {
+						const successful = document.execCommand('copy');
+						document.body.removeChild(textArea);
+						return Promise.resolve(successful);
+					} catch (err) {
+						document.body.removeChild(textArea);
+						return Promise.resolve(false);
+					}
+				}
+			}
+			
+			// Añadir event listener cuando el DOM esté listo
+			document.addEventListener('DOMContentLoaded', function() {
+				// Generador de licencias
+				const generateBtn = document.getElementById('generate-license-btn');
+				const licenseInput = document.getElementById('license_key');
+				
+				if (generateBtn && licenseInput) {
+					generateBtn.addEventListener('click', function(e) {
+						e.preventDefault();
+						licenseInput.value = generateLicenseKey();
+					});
+				}
+				
+				// Botones de copiar licencia
+				const copyButtons = document.querySelectorAll('.copy-license-btn');
+				copyButtons.forEach(function(btn) {
+					btn.addEventListener('click', function(e) {
+						e.preventDefault();
+						const licenseKey = this.getAttribute('data-license-key');
+						if (licenseKey) {
+							copyToClipboard(licenseKey).then(function(success) {
+								if (success) {
+									const originalText = btn.textContent;
+									btn.textContent = '<?php esc_html_e( '¡Copiado!', 'json-version-manager' ); ?>';
+									btn.style.backgroundColor = '#46b450';
+									btn.style.color = '#fff';
+									setTimeout(function() {
+										btn.textContent = originalText;
+										btn.style.backgroundColor = '';
+										btn.style.color = '';
+									}, 2000);
+								} else {
+									alert('<?php esc_attr_e( 'Error al copiar. Por favor, copia manualmente.', 'json-version-manager' ); ?>');
+								}
+							});
+						}
+					});
+				});
+			});
+		})();
+		</script>
 		<?php
 	}
 

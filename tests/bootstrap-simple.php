@@ -289,7 +289,7 @@ if ( ! function_exists( 'number_format_i18n' ) ) {
 // Nota: Estas constantes pueden estar definidas en json-version-manager.php
 // pero las definimos aquí para los tests si no existen
 if ( ! defined( 'JVM_VERSION' ) ) {
-	define( 'JVM_VERSION', '1.0.3' );
+	define( 'JVM_VERSION', '1.0.4' );
 }
 if ( ! defined( 'JVM_PLUGIN_DIR' ) ) {
 	define( 'JVM_PLUGIN_DIR', dirname( __DIR__ ) . '/' );
