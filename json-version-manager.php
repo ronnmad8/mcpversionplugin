@@ -3,7 +3,7 @@
  * Plugin Name:       JSON Version Manager
  * Plugin URI:        https://renekay.com
  * Description:       Gestiona el archivo JSON de versiones para MCP Stream WordPress desde el admin de WordPress
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            RENEKAY
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Definir constantes del plugin
-define( 'JVM_VERSION', '1.0.1' );
+define( 'JVM_VERSION', '1.0.2' );
 define( 'JVM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JVM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'JVM_JSON_FILE', JVM_PLUGIN_DIR . 'mcp-metadata.json' );

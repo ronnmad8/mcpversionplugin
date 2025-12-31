@@ -42,6 +42,16 @@ if ( ! function_exists( 'add_filter' ) ) {
 	}
 }
 
+if ( ! function_exists( 'do_action' ) ) {
+	function do_action( $hook, ...$args ) {
+		global $wp_actions;
+		if ( ! isset( $wp_actions ) ) {
+			$wp_actions = array();
+		}
+		$wp_actions[ $hook ] = $args;
+	}
+}
+
 if ( ! function_exists( 'register_activation_hook' ) ) {
 	function register_activation_hook( $file, $callback ) {
 		// Mock - no hace nada
