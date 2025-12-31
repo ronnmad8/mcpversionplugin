@@ -29,6 +29,8 @@ class JSON_Version_Manager {
 		add_action( 'admin_init', array( $this, 'register_settings' ), 10 );
 		add_action( 'admin_post_jvm_save_json', array( $this, 'save_json' ) );
 		add_action( 'admin_post_jvm_preview_json', array( $this, 'preview_json' ) );
+		add_action( 'admin_post_jvm_save_license', array( $this, 'save_license' ) );
+		add_action( 'admin_post_jvm_delete_license', array( $this, 'delete_license' ) );
 		
 		// Usar prioridad alta para template_redirect para que se ejecute antes que otros plugins
 		// pero solo si no hay conflictos
@@ -286,6 +288,8 @@ class JSON_Version_Manager {
 				</p>
 			</form>
 			</div>
+
+			<?php $this->render_license_section(); ?>
 
 			<div style="background: #fff; border: 1px solid #ccd0d4; padding: 15px; margin-top: 20px; font-size: 12px;">
 				<details style="cursor: pointer;">

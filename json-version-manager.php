@@ -32,9 +32,15 @@ define( 'JVM_JSON_URL', JVM_PLUGIN_URL . 'mcp-metadata.json' );
 require_once JVM_PLUGIN_DIR . 'includes/class-error-handler.php';
 require_once JVM_PLUGIN_DIR . 'includes/class-json-version-manager.php';
 require_once JVM_PLUGIN_DIR . 'includes/class-admin-menu-fix.php';
+require_once JVM_PLUGIN_DIR . 'includes/class-license-api.php';
 
 // Inicializar error handler primero
 JVM_Error_Handler::init();
+
+// Inicializar API de licencias
+if ( class_exists( 'JVM_License_API' ) ) {
+	new JVM_License_API();
+}
 
 // Inicializar el plugin inmediatamente
 function jvm_init() {
