@@ -61,9 +61,14 @@ function jvm_init() {
 add_action( 'plugins_loaded', 'jvm_init', 5 );
 add_action( 'init', 'jvm_init', 5 );
 
-// Añadir menú directamente en admin_menu con alta prioridad
+// Añadir menú directamente - SOLUCIÓN DIRECTA
 function jvm_add_admin_menu_direct() {
-	if ( ! is_admin() ) {
+	// Verificaciones básicas
+	if ( ! function_exists( 'is_admin' ) || ! is_admin() ) {
+		return;
+	}
+
+	if ( ! function_exists( 'add_management_page' ) ) {
 		return;
 	}
 
@@ -75,7 +80,7 @@ function jvm_add_admin_menu_direct() {
 	global $submenu;
 	$menu_exists = false;
 	
-	if ( isset( $submenu['tools.php'] ) ) {
+	if ( isset( $submenu['tools.php'] ) && is_array( $submenu['tools.php'] ) ) {
 		foreach ( $submenu['tools.php'] as $item ) {
 			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
 				$menu_exists = true;
@@ -84,22 +89,39 @@ function jvm_add_admin_menu_direct() {
 		}
 	}
 
-	// Si no existe, añadirlo
+	// Si no existe, añadirlo SIEMPRE
 	if ( ! $menu_exists ) {
 		$manager = new JSON_Version_Manager();
-		add_management_page(
-			__( 'JSON Version Manager', 'json-version-manager' ),
-			__( 'JSON Versiones', 'json-version-manager' ),
+		$hook = add_management_page(
+			'JSON Version Manager',
+			'JSON Versiones',
 			'manage_options',
 			'json-version-manager',
 			array( $manager, 'render_admin_page' )
 		);
+
+		// Si falla add_management_page, usar add_menu_page como fallback
+		if ( ! $hook && function_exists( 'add_menu_page' ) ) {
+			add_menu_page(
+				'JSON Version Manager',
+				'JSON Versiones',
+				'manage_options',
+				'json-version-manager',
+				array( $manager, 'render_admin_page' ),
+				'dashicons-update',
+				30
+			);
+		}
 	}
 }
-// Usar múltiples hooks y prioridades para asegurar que se ejecuta
+
+// Registrar en múltiples hooks y prioridades para asegurar que se ejecuta
+add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 1 );
 add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 5 );
+add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 10 );
 add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 15 );
-add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 25 );
+add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 20 );
+add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 999 );
 
 // Hook de activación
 register_activation_hook( __FILE__, 'jvm_activate' );

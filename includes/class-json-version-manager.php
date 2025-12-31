@@ -55,25 +55,42 @@ class JSON_Version_Manager {
 	 * Add admin menu
 	 */
 	public function add_admin_menu() {
-		// Solo ejecutar en admin
-		if ( ! is_admin() ) {
+		// Verificaciones básicas
+		if ( ! function_exists( 'is_admin' ) || ! is_admin() ) {
 			return;
+		}
+
+		if ( ! function_exists( 'add_management_page' ) ) {
+			return;
+		}
+
+		// Verificar si ya existe para evitar duplicados
+		global $submenu;
+		$menu_exists = false;
+		
+		if ( isset( $submenu['tools.php'] ) && is_array( $submenu['tools.php'] ) ) {
+			foreach ( $submenu['tools.php'] as $item ) {
+				if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
+					$menu_exists = true;
+					return; // Ya existe, no hacer nada
+				}
+			}
 		}
 
 		// Añadir página en el menú de Herramientas
 		$hook = add_management_page(
-			__( 'JSON Version Manager', 'json-version-manager' ),
-			__( 'JSON Versiones', 'json-version-manager' ),
+			'JSON Version Manager',
+			'JSON Versiones',
 			'manage_options',
 			'json-version-manager',
 			array( $this, 'render_admin_page' )
 		);
 
 		// Si no se añadió en Herramientas, intentar en el menú principal como fallback
-		if ( ! $hook ) {
+		if ( ! $hook && function_exists( 'add_menu_page' ) ) {
 			add_menu_page(
-				__( 'JSON Version Manager', 'json-version-manager' ),
-				__( 'JSON Versiones', 'json-version-manager' ),
+				'JSON Version Manager',
+				'JSON Versiones',
 				'manage_options',
 				'json-version-manager',
 				array( $this, 'render_admin_page' ),
