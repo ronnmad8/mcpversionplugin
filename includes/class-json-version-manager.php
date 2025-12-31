@@ -25,7 +25,8 @@ class JSON_Version_Manager {
 	 */
 	public function init() {
 		// Asegurar que el menú se añade correctamente
-		// Usar prioridad estándar para admin_menu
+		// Usar múltiples prioridades para asegurar que se ejecuta
+		add_action( 'admin_menu', array( $this, 'add_admin_menu' ), 5 );
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ), 10 );
 		add_action( 'admin_init', array( $this, 'register_settings' ), 10 );
 		add_action( 'admin_post_jvm_save_json', array( $this, 'save_json' ) );

@@ -12,10 +12,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Función para verificar y forzar el menú
+ * Se ejecuta con múltiples prioridades para asegurar que funciona
  */
 function jvm_ensure_admin_menu() {
 	// Solo ejecutar en admin
-	if ( ! is_admin() ) {
+	if ( ! is_admin() || ! function_exists( 'is_admin' ) ) {
+		return;
+	}
+
+	if ( ! class_exists( 'JSON_Version_Manager' ) ) {
 		return;
 	}
 
@@ -24,7 +29,7 @@ function jvm_ensure_admin_menu() {
 	
 	// Buscar si nuestro menú ya está registrado
 	$menu_exists = false;
-	if ( isset( $submenu['tools.php'] ) ) {
+	if ( isset( $submenu['tools.php'] ) && is_array( $submenu['tools.php'] ) ) {
 		foreach ( $submenu['tools.php'] as $item ) {
 			if ( isset( $item[2] ) && $item[2] === 'json-version-manager' ) {
 				$menu_exists = true;
@@ -33,18 +38,33 @@ function jvm_ensure_admin_menu() {
 		}
 	}
 
-	// Si no existe y la clase está disponible, añadirlo manualmente
-	if ( ! $menu_exists && class_exists( 'JSON_Version_Manager' ) ) {
+	// Si no existe, añadirlo manualmente
+	if ( ! $menu_exists ) {
 		$manager = new JSON_Version_Manager();
-		add_management_page(
+		$hook = add_management_page(
 			__( 'JSON Version Manager', 'json-version-manager' ),
 			__( 'JSON Versiones', 'json-version-manager' ),
 			'manage_options',
 			'json-version-manager',
 			array( $manager, 'render_admin_page' )
 		);
+
+		// Si falla add_management_page, intentar como menú principal
+		if ( ! $hook ) {
+			add_menu_page(
+				__( 'JSON Version Manager', 'json-version-manager' ),
+				__( 'JSON Versiones', 'json-version-manager' ),
+				'manage_options',
+				'json-version-manager',
+				array( $manager, 'render_admin_page' ),
+				'dashicons-update',
+				30
+			);
+		}
 	}
 }
-// Usar prioridad muy alta para asegurar que se ejecuta después de todo
+// Usar múltiples prioridades para asegurar que se ejecuta
+add_action( 'admin_menu', 'jvm_ensure_admin_menu', 5 );
+add_action( 'admin_menu', 'jvm_ensure_admin_menu', 15 );
 add_action( 'admin_menu', 'jvm_ensure_admin_menu', 999 );
 

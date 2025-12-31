@@ -36,7 +36,7 @@ require_once JVM_PLUGIN_DIR . 'includes/class-admin-menu-fix.php';
 // Inicializar error handler primero
 JVM_Error_Handler::init();
 
-// Inicializar el plugin con manejo de errores
+// Inicializar el plugin inmediatamente
 function jvm_init() {
 	try {
 		// Verificar que la clase existe
@@ -56,16 +56,22 @@ function jvm_init() {
 		}
 	}
 }
-// Usar prioridad estándar para asegurar que se inicializa
-add_action( 'plugins_loaded', 'jvm_init', 10 );
 
-// También intentar inicializar directamente en admin_init como fallback
-function jvm_admin_init_fallback() {
+// Inicializar en múltiples hooks para asegurar que se ejecuta
+add_action( 'plugins_loaded', 'jvm_init', 5 );
+add_action( 'init', 'jvm_init', 5 );
+
+// Añadir menú directamente en admin_menu con alta prioridad
+function jvm_add_admin_menu_direct() {
+	if ( ! is_admin() ) {
+		return;
+	}
+
 	if ( ! class_exists( 'JSON_Version_Manager' ) ) {
 		return;
 	}
-	
-	// Verificar si el menú ya está registrado
+
+	// Verificar si ya existe
 	global $submenu;
 	$menu_exists = false;
 	
@@ -77,14 +83,23 @@ function jvm_admin_init_fallback() {
 			}
 		}
 	}
-	
-	// Si no existe, crearlo
+
+	// Si no existe, añadirlo
 	if ( ! $menu_exists ) {
 		$manager = new JSON_Version_Manager();
-		$manager->add_admin_menu();
+		add_management_page(
+			__( 'JSON Version Manager', 'json-version-manager' ),
+			__( 'JSON Versiones', 'json-version-manager' ),
+			'manage_options',
+			'json-version-manager',
+			array( $manager, 'render_admin_page' )
+		);
 	}
 }
-add_action( 'admin_init', 'jvm_admin_init_fallback', 1 );
+// Usar múltiples hooks y prioridades para asegurar que se ejecuta
+add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 5 );
+add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 15 );
+add_action( 'admin_menu', 'jvm_add_admin_menu_direct', 25 );
 
 // Hook de activación
 register_activation_hook( __FILE__, 'jvm_activate' );
