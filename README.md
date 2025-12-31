@@ -76,7 +76,7 @@ GPL-2.0-or-later
 
 ## 👤 Autor
 
-BY360 - https://by360.es
+RENEKAY - https://renekay.com
 
 ## 🔗 Repositorio
 
