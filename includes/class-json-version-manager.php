@@ -143,30 +143,49 @@ class JSON_Version_Manager {
 			</p>
 
 			<div style="background: #fff; border: 1px solid #ccd0d4; padding: 20px; margin-top: 20px; border-left: 4px solid #2271b1;">
-				<h2 style="margin-top: 0;"><?php esc_html_e( 'Información de Versión Actual', 'json-version-manager' ); ?></h2>
+				<h2 style="margin-top: 0;"><?php esc_html_e( 'Versión Actual en el JSON', 'json-version-manager' ); ?></h2>
+				<p class="description" style="margin-bottom: 15px;">
+					<?php esc_html_e( 'Esta es la versión que actualmente está sirviendo el archivo JSON. Puedes editarla en el formulario de abajo.', 'json-version-manager' ); ?>
+				</p>
 				<table class="widefat" style="margin-top: 10px;">
 					<tbody>
-						<tr>
-							<td style="width: 200px; font-weight: bold;"><?php esc_html_e( 'Versión del Plugin:', 'json-version-manager' ); ?></td>
-							<td><strong style="color: #2271b1; font-size: 16px;"><?php echo esc_html( $current_version ); ?></strong></td>
+						<tr style="background: #f0f6fc;">
+							<td style="width: 250px; font-weight: bold; padding: 15px;">
+								<?php esc_html_e( 'Versión del Plugin (actual):', 'json-version-manager' ); ?>
+							</td>
+							<td style="padding: 15px;">
+								<strong style="color: #2271b1; font-size: 20px; font-weight: bold;">
+									<?php echo esc_html( $current_version ); ?>
+								</strong>
+								<span style="margin-left: 10px; color: #666; font-size: 12px;">
+									(<?php esc_html_e( 'Esta versión se está sirviendo actualmente', 'json-version-manager' ); ?>)
+								</span>
+							</td>
 						</tr>
 						<tr>
-							<td style="font-weight: bold;"><?php esc_html_e( 'Versión del Adaptador:', 'json-version-manager' ); ?></td>
-							<td><strong><?php echo esc_html( $adapter_version ); ?></strong></td>
+							<td style="font-weight: bold; padding: 15px;"><?php esc_html_e( 'Versión del Adaptador:', 'json-version-manager' ); ?></td>
+							<td style="padding: 15px;">
+								<strong><?php echo esc_html( $adapter_version ); ?></strong>
+							</td>
 						</tr>
 						<tr>
-							<td style="font-weight: bold;"><?php esc_html_e( 'Versión Mínima Requerida:', 'json-version-manager' ); ?></td>
-							<td><strong><?php echo esc_html( $min_adapter_version ); ?></strong></td>
+							<td style="font-weight: bold; padding: 15px;"><?php esc_html_e( 'Versión Mínima Requerida:', 'json-version-manager' ); ?></td>
+							<td style="padding: 15px;">
+								<strong><?php echo esc_html( $min_adapter_version ); ?></strong>
+								<span style="margin-left: 10px; color: #d63638; font-size: 12px;">
+									<?php esc_html_e( '(Fuerza actualización si se aumenta)', 'json-version-manager' ); ?>
+								</span>
+							</td>
 						</tr>
 						<tr>
-							<td style="font-weight: bold;"><?php esc_html_e( 'Última Actualización:', 'json-version-manager' ); ?></td>
-							<td><?php echo esc_html( $last_updated ); ?></td>
+							<td style="font-weight: bold; padding: 15px;"><?php esc_html_e( 'Última Actualización:', 'json-version-manager' ); ?></td>
+							<td style="padding: 15px;"><?php echo esc_html( $last_updated ); ?></td>
 						</tr>
 						<?php if ( $json_file_exists ) : ?>
 							<tr>
-								<td style="font-weight: bold;"><?php esc_html_e( 'Archivo JSON:', 'json-version-manager' ); ?></td>
-								<td>
-									<span style="color: green;">✓ <?php esc_html_e( 'Existe', 'json-version-manager' ); ?></span>
+								<td style="font-weight: bold; padding: 15px;"><?php esc_html_e( 'Estado del Archivo JSON:', 'json-version-manager' ); ?></td>
+								<td style="padding: 15px;">
+									<span style="color: green; font-weight: bold;">✓ <?php esc_html_e( 'Activo y sirviendo', 'json-version-manager' ); ?></span>
 									<span style="margin-left: 20px; color: #666;">
 										<?php echo esc_html( size_format( $json_file_size ) ); ?> | 
 										<?php echo esc_html( $json_file_date ); ?>
@@ -175,8 +194,10 @@ class JSON_Version_Manager {
 							</tr>
 						<?php else : ?>
 							<tr>
-								<td style="font-weight: bold;"><?php esc_html_e( 'Archivo JSON:', 'json-version-manager' ); ?></td>
-								<td><span style="color: red;">✗ <?php esc_html_e( 'No existe', 'json-version-manager' ); ?></span></td>
+								<td style="font-weight: bold; padding: 15px;"><?php esc_html_e( 'Estado del Archivo JSON:', 'json-version-manager' ); ?></td>
+								<td style="padding: 15px;">
+									<span style="color: red; font-weight: bold;">✗ <?php esc_html_e( 'No existe - Se creará al guardar', 'json-version-manager' ); ?></span>
+								</td>
 							</tr>
 						<?php endif; ?>
 					</tbody>
@@ -212,11 +233,18 @@ class JSON_Version_Manager {
 				<?php endif; ?>
 			</div>
 
+			<div style="background: #fff; border: 1px solid #ccd0d4; padding: 20px; margin-top: 20px;">
+				<h2><?php esc_html_e( 'Editar Versiones del JSON', 'json-version-manager' ); ?></h2>
+				<p class="description">
+					<?php esc_html_e( 'Modifica las versiones que se servirán en el archivo JSON. Los cambios se aplicarán inmediatamente después de guardar.', 'json-version-manager' ); ?>
+				</p>
+			</div>
+
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top: 20px;">
 				<?php wp_nonce_field( 'jvm_save_json', 'jvm_nonce' ); ?>
 				<input type="hidden" name="action" value="jvm_save_json">
 
-				<table class="form-table" role="presentation">
+				<table class="form-table" role="presentation" style="background: #fff; border: 1px solid #ccd0d4;">
 					<tr>
 						<th scope="row">
 							<label for="name"><?php esc_html_e( 'Nombre del Plugin', 'json-version-manager' ); ?></label>
@@ -235,32 +263,69 @@ class JSON_Version_Manager {
 						</td>
 					</tr>
 
-					<tr>
-						<th scope="row">
-							<label for="version"><?php esc_html_e( 'Versión del Plugin', 'json-version-manager' ); ?></label>
+					<tr style="background: #f0f6fc; border-left: 4px solid #2271b1;">
+						<th scope="row" style="padding: 15px;">
+							<label for="version" style="font-size: 14px; font-weight: bold;">
+								<?php esc_html_e( 'Versión del Plugin (Actualizar)', 'json-version-manager' ); ?>
+							</label>
+							<p class="description" style="margin-top: 5px; font-weight: normal;">
+								<?php esc_html_e( 'Versión actual:', 'json-version-manager' ); ?>
+								<strong style="color: #2271b1;"><?php echo esc_html( $current_version ); ?></strong>
+							</p>
 						</th>
-						<td>
-							<input type="text" id="version" name="version" value="<?php echo esc_attr( $json_data['version'] ?? '1.0.0' ); ?>" class="regular-text" required>
-							<p class="description"><?php esc_html_e( 'Formato: X.Y.Z (ej: 1.0.0)', 'json-version-manager' ); ?></p>
+						<td style="padding: 15px;">
+							<input 
+								type="text" 
+								id="version" 
+								name="version" 
+								value="<?php echo esc_attr( $json_data['version'] ?? '1.0.0' ); ?>" 
+								class="regular-text" 
+								required
+								style="font-size: 16px; font-weight: bold; padding: 8px; border: 2px solid #2271b1;"
+								placeholder="1.0.0"
+							>
+							<p class="description" style="margin-top: 8px;">
+								<strong><?php esc_html_e( 'Formato:', 'json-version-manager' ); ?></strong> X.Y.Z (ej: 1.0.0, 1.1.0, 2.0.0)
+								<br>
+								<span style="color: #d63638;">
+									<?php esc_html_e( '⚠️ Esta versión será la que se sirva en el JSON público.', 'json-version-manager' ); ?>
+								</span>
+							</p>
 						</td>
 					</tr>
 
 					<tr>
 						<th scope="row">
-							<label for="adapter_version"><?php esc_html_e( 'Versión del Adaptador', 'json-version-manager' ); ?></label>
+							<label for="adapter_version">
+								<?php esc_html_e( 'Versión del Adaptador', 'json-version-manager' ); ?>
+								<span style="color: #666; font-weight: normal; font-size: 12px;">
+									(<?php esc_html_e( 'Actual:', 'json-version-manager' ); ?> <?php echo esc_html( $adapter_version ); ?>)
+								</span>
+							</label>
 						</th>
 						<td>
 							<input type="text" id="adapter_version" name="adapter_version" value="<?php echo esc_attr( $json_data['adapter_version'] ?? '1.0.0' ); ?>" class="regular-text" required>
+							<p class="description">
+								<?php esc_html_e( 'Versión del adaptador STDIO que se distribuye.', 'json-version-manager' ); ?>
+							</p>
 						</td>
 					</tr>
 
 					<tr>
 						<th scope="row">
-							<label for="min_adapter_version"><?php esc_html_e( 'Versión Mínima del Adaptador', 'json-version-manager' ); ?></label>
+							<label for="min_adapter_version">
+								<?php esc_html_e( 'Versión Mínima del Adaptador', 'json-version-manager' ); ?>
+								<span style="color: #666; font-weight: normal; font-size: 12px;">
+									(<?php esc_html_e( 'Actual:', 'json-version-manager' ); ?> <?php echo esc_html( $min_adapter_version ); ?>)
+								</span>
+							</label>
 						</th>
 						<td>
 							<input type="text" id="min_adapter_version" name="min_adapter_version" value="<?php echo esc_attr( $json_data['min_adapter_version'] ?? '1.0.0' ); ?>" class="regular-text" required>
-							<p class="description"><?php esc_html_e( 'Versión mínima requerida. Si la aumentas, fuerzas actualización.', 'json-version-manager' ); ?></p>
+							<p class="description">
+								<strong style="color: #d63638;"><?php esc_html_e( '⚠️ Importante:', 'json-version-manager' ); ?></strong>
+								<?php esc_html_e( 'Versión mínima requerida. Si la aumentas, fuerzas actualización del adaptador en todos los clientes.', 'json-version-manager' ); ?>
+							</p>
 						</td>
 					</tr>
 
