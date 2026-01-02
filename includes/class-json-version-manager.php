@@ -79,8 +79,8 @@ class JSON_Version_Manager {
 
 		// Añadir página en el menú de Herramientas
 		$hook = add_management_page(
-			'JSON Version Manager',
-			'JSON Versiones',
+			'MCP VERSION',
+			'MCP VERSION',
 			'manage_options',
 			'json-version-manager',
 			array( $this, 'render_admin_page' )
@@ -89,8 +89,8 @@ class JSON_Version_Manager {
 		// Si no se añadió en Herramientas, intentar en el menú principal como fallback
 		if ( ! $hook && function_exists( 'add_menu_page' ) ) {
 			add_menu_page(
-				'JSON Version Manager',
-				'JSON Versiones',
+				'MCP VERSION',
+				'MCP VERSION',
 				'manage_options',
 				'json-version-manager',
 				array( $this, 'render_admin_page' ),
@@ -162,8 +162,6 @@ class JSON_Version_Manager {
 
 		// Obtener información de versión actual
 		$current_version = $json_data['version'] ?? '1.0.0';
-		$adapter_version = $json_data['adapter_version'] ?? '1.0.0';
-		$min_adapter_version = $json_data['min_adapter_version'] ?? '1.0.0';
 		$last_updated = $json_data['last_updated'] ?? date( 'Y-m-d' );
 		$json_file_exists = file_exists( JVM_JSON_FILE );
 		$json_file_size = $json_file_exists ? filesize( JVM_JSON_FILE ) : 0;
@@ -171,7 +169,7 @@ class JSON_Version_Manager {
 
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'JSON Version Manager', 'json-version-manager' ); ?></h1>
+			<h1><?php esc_html_e( 'MCP VERSION', 'json-version-manager' ); ?></h1>
 			
 			<div style="background: #fff; border: 1px solid #ccd0d4; padding: 20px; margin-top: 20px; border-left: 4px solid #2271b1;">
 				<h2 style="margin-top: 0; font-size: 18px;">
@@ -252,43 +250,7 @@ class JSON_Version_Manager {
 						</td>
 					</tr>
 
-					<tr>
-						<th scope="row" style="padding: 12px;">
-							<label for="adapter_version">
-								<?php esc_html_e( 'Versión Adaptador', 'json-version-manager' ); ?>
-							</label>
-						</th>
-						<td style="padding: 12px;">
-							<div style="display: flex; align-items: center; gap: 10px;">
-								<span style="color: #666; font-size: 12px;">
-									<?php esc_html_e( 'Actual:', 'json-version-manager' ); ?> <?php echo esc_html( $adapter_version ); ?>
-								</span>
-								<input type="text" id="adapter_version" name="adapter_version" value="<?php echo esc_attr( $json_data['adapter_version'] ?? '1.0.0' ); ?>" class="small-text" required style="width: 100px;">
-							</div>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row" style="padding: 12px;">
-							<label for="min_adapter_version">
-								<?php esc_html_e( 'Versión Mínima', 'json-version-manager' ); ?>
-							</label>
-						</th>
-						<td style="padding: 12px;">
-							<div style="display: flex; align-items: center; gap: 10px;">
-								<span style="color: #666; font-size: 12px;">
-									<?php esc_html_e( 'Actual:', 'json-version-manager' ); ?> <?php echo esc_html( $min_adapter_version ); ?>
-								</span>
-								<input type="text" id="min_adapter_version" name="min_adapter_version" value="<?php echo esc_attr( $json_data['min_adapter_version'] ?? '1.0.0' ); ?>" class="small-text" required style="width: 100px;">
-								<span style="color: #d63638; font-size: 11px;">
-									⚠️ <?php esc_html_e( 'Fuerza actualización', 'json-version-manager' ); ?>
-								</span>
-							</div>
-						</td>
-					</tr>
-
 					<!-- Campos ocultos para mantener compatibilidad -->
-					<input type="hidden" id="download_url" name="download_url" value="<?php echo esc_attr( $json_data['download_url'] ?? 'https://renekay.com/api/mcp-adapter-download.php' ); ?>">
 					<input type="hidden" id="requires_php" name="requires_php" value="<?php echo esc_attr( $json_data['requires_php'] ?? '8.0' ); ?>">
 					<input type="hidden" id="requires_wordpress" name="requires_wordpress" value="<?php echo esc_attr( $json_data['requires_wordpress'] ?? '6.4' ); ?>">
 					<input type="hidden" id="tested_up_to" name="tested_up_to" value="<?php echo esc_attr( $json_data['tested_up_to'] ?? '6.4' ); ?>">
@@ -357,9 +319,6 @@ class JSON_Version_Manager {
 					name: formData.get('name'),
 					slug: formData.get('slug'),
 					version: formData.get('version'),
-					adapter_version: formData.get('adapter_version'),
-					min_adapter_version: formData.get('min_adapter_version'),
-					download_url: formData.get('download_url'),
 					requires_php: formData.get('requires_php'),
 					requires_wordpress: formData.get('requires_wordpress'),
 					tested_up_to: formData.get('tested_up_to'),
@@ -427,9 +386,6 @@ class JSON_Version_Manager {
 			'name'                => 'MCP Stream WordPress',
 			'slug'                => 'mcp-stream-wp',
 			'version'             => '1.0.0',
-			'adapter_version'     => '1.0.0',
-			'min_adapter_version' => '1.0.0',
-			'download_url'        => 'https://renekay.com/api/mcp-adapter-download.php',
 			'requires_php'        => '8.0',
 			'requires_wordpress'  => '6.4',
 			'last_updated'        => date( 'Y-m-d' ),
@@ -475,13 +431,14 @@ class JSON_Version_Manager {
 
 		// Recoger datos del formulario con validación y manejo de errores
 		try {
+			// Cargar datos existentes para preservar campos internos (adapter_version, min_adapter_version)
+			// que se usan en la lógica STDIO pero no se muestran en la interfaz
+			$existing_data = $this->get_json_data();
+			
 			$json_data = array(
 				'name'                => sanitize_text_field( $_POST['name'] ?? '' ),
 				'slug'                => sanitize_text_field( $_POST['slug'] ?? '' ),
 				'version'             => sanitize_text_field( $_POST['version'] ?? '1.0.0' ),
-				'adapter_version'     => sanitize_text_field( $_POST['adapter_version'] ?? '1.0.0' ),
-				'min_adapter_version' => sanitize_text_field( $_POST['min_adapter_version'] ?? '1.0.0' ),
-				'download_url'        => esc_url_raw( $_POST['download_url'] ?? '' ),
 				'requires_php'        => sanitize_text_field( $_POST['requires_php'] ?? '8.0' ),
 				'requires_wordpress'  => sanitize_text_field( $_POST['requires_wordpress'] ?? '6.4' ),
 				'last_updated'        => date( 'Y-m-d' ),
@@ -491,6 +448,15 @@ class JSON_Version_Manager {
 				'php_files_hash'      => sanitize_text_field( $_POST['php_files_hash'] ?? '' ),
 				'tested_up_to'        => sanitize_text_field( $_POST['tested_up_to'] ?? '6.4' ),
 			);
+			
+			// Preservar campos internos del adaptador si existen (para lógica STDIO)
+			// Estos campos no se muestran ni editan en la interfaz
+			if ( isset( $existing_data['adapter_version'] ) ) {
+				$json_data['adapter_version'] = $existing_data['adapter_version'];
+			}
+			if ( isset( $existing_data['min_adapter_version'] ) ) {
+				$json_data['min_adapter_version'] = $existing_data['min_adapter_version'];
+			}
 
 			// Validar campos requeridos
 			if ( empty( $json_data['name'] ) || empty( $json_data['slug'] ) || empty( $json_data['version'] ) ) {

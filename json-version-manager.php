@@ -137,8 +137,8 @@ function jvm_add_admin_menu_once() {
 	if ( ! $exists_in_tools && ! $exists_in_main ) {
 		$manager = new JSON_Version_Manager();
 		$hook = add_management_page(
-			'JSON Version Manager',
-			'JSON Versiones',
+			'MCP VERSION',
+			'MCP VERSION',
 			'manage_options',
 			'json-version-manager',
 			array( $manager, 'render_admin_page' )
@@ -147,8 +147,8 @@ function jvm_add_admin_menu_once() {
 		// Si falla add_management_page, usar add_menu_page como fallback
 		if ( ! $hook && function_exists( 'add_menu_page' ) ) {
 			add_menu_page(
-				'JSON Version Manager',
-				'JSON Versiones',
+				'MCP VERSION',
+				'MCP VERSION',
 				'manage_options',
 				'json-version-manager',
 				array( $manager, 'render_admin_page' ),
@@ -174,9 +174,6 @@ function jvm_activate() {
 			'name'                => 'MCP Stream WordPress',
 			'slug'                => 'mcp-stream-wp',
 			'version'             => '1.0.0',
-			'adapter_version'     => '1.0.0',
-			'min_adapter_version' => '1.0.0',
-			'download_url'        => 'https://renekay.com/api/mcp-adapter-download.php',
 			'requires_php'        => '8.0',
 			'requires_wordpress'  => '6.4',
 			'last_updated'        => date( 'Y-m-d' ),
