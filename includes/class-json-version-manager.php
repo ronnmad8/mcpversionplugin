@@ -728,6 +728,7 @@ class JSON_Version_Manager {
 				<table class="widefat" style="margin-top: 10px;">
 					<thead>
 						<tr>
+							<th><?php esc_html_e( 'ID', 'json-version-manager' ); ?></th>
 							<th><?php esc_html_e( 'Clave', 'json-version-manager' ); ?></th>
 							<th><?php esc_html_e( 'Cliente', 'json-version-manager' ); ?></th>
 							<th><?php esc_html_e( 'Expira', 'json-version-manager' ); ?></th>
@@ -738,6 +739,9 @@ class JSON_Version_Manager {
 					<tbody>
 						<?php foreach ( $valid_licenses as $index => $license ) : ?>
 							<tr>
+								<td>
+									<strong style="font-size: 14px; color: #2271b1;"><?php echo esc_html( $index ); ?></strong>
+								</td>
 								<td>
 									<code style="background: #f0f0f1; padding: 4px 8px; border-radius: 3px; font-size: 12px; display: inline-block; margin-right: 8px;">
 										<?php echo esc_html( $license['key'] ); ?>

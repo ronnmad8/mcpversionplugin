@@ -129,9 +129,11 @@ class JVM_License_API {
 
 		// Buscar la licencia en la lista de válidas
 		$license_data = null;
-		foreach ( $valid_licenses as $license ) {
+		$license_id = null;
+		foreach ( $valid_licenses as $index => $license ) {
 			if ( isset( $license['key'] ) && $license['key'] === $license_key ) {
 				$license_data = $license;
+				$license_id = $index; // Guardar el índice como ID
 				break;
 			}
 		}
@@ -188,6 +190,7 @@ class JVM_License_API {
 			'customer'    => isset( $license_data['customer'] ) ? $license_data['customer'] : 'Unknown',
 			'activations' => $this->get_activation_count( $license_key ),
 			'site_url'    => $site_url,
+			'license_id'  => $license_id, // Agregar ID de la licencia (índice en el array)
 		);
 	}
 
