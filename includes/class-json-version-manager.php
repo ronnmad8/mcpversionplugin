@@ -298,16 +298,47 @@ class JSON_Version_Manager {
 			<div style="background: #fff; border: 1px solid #ccd0d4; padding: 20px; margin-top: 20px;">
 				<h2><?php esc_html_e( 'Vista Previa del JSON', 'json-version-manager' ); ?></h2>
 				<pre style="background: #f0f0f1; padding: 15px; border-radius: 3px; overflow-x: auto;"><code id="json-preview"><?php echo esc_html( wp_json_encode( $json_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) ); ?></code></pre>
-				<button type="button" class="button" onclick="document.getElementById('json-preview').textContent = JSON.stringify(<?php echo wp_json_encode( $json_data ); ?>, null, 2);">
+				<button type="button" class="button" id="refresh-preview-btn" onclick="refreshJsonPreview()">
 					<?php esc_html_e( 'Actualizar Vista Previa', 'json-version-manager' ); ?>
 				</button>
 				<a href="<?php echo esc_url( JVM_JSON_URL ); ?>" target="_blank" class="button">
 					<?php esc_html_e( 'Ver JSON Público', 'json-version-manager' ); ?>
 				</a>
+				<span id="preview-status" style="margin-left: 10px; color: #666; font-size: 12px;"></span>
 			</div>
 		</div>
 
 		<script>
+		// Función para recargar la vista previa desde el servidor
+		function refreshJsonPreview() {
+			const preview = document.getElementById('json-preview');
+			const status = document.getElementById('preview-status');
+			const btn = document.getElementById('refresh-preview-btn');
+			
+			btn.disabled = true;
+			status.textContent = 'Cargando...';
+			
+			// Cargar el JSON público directamente desde el servidor
+			fetch('<?php echo esc_js( JVM_JSON_URL ); ?>?t=' + Date.now())
+				.then(response => response.json())
+				.then(data => {
+					preview.textContent = JSON.stringify(data, null, 2);
+					status.textContent = '✓ Actualizado';
+					status.style.color = '#46b450';
+					setTimeout(() => {
+						status.textContent = '';
+					}, 2000);
+				})
+				.catch(error => {
+					status.textContent = '✗ Error al cargar';
+					status.style.color = '#dc3232';
+					console.error('Error al cargar JSON:', error);
+				})
+				.finally(() => {
+					btn.disabled = false;
+				});
+		}
+		
 		// Actualizar vista previa al cambiar campos
 		document.addEventListener('DOMContentLoaded', function() {
 			const form = document.querySelector('form');
@@ -343,7 +374,15 @@ class JSON_Version_Manager {
 	 */
 	private function get_json_data() {
 		try {
+			// Limpiar caché de estadísticas del archivo para asegurar lectura actualizada
+			clearstatcache( true, JVM_JSON_FILE );
+			
 			if ( file_exists( JVM_JSON_FILE ) && is_readable( JVM_JSON_FILE ) ) {
+				// Limpiar caché de opcode si está disponible
+				if ( function_exists( 'opcache_invalidate' ) ) {
+					opcache_invalidate( JVM_JSON_FILE, true );
+				}
+				
 				$content = @file_get_contents( JVM_JSON_FILE );
 				
 				if ( false === $content ) {
@@ -507,11 +546,32 @@ class JSON_Version_Manager {
 				throw new Exception( __( 'El archivo no se creó correctamente.', 'json-version-manager' ) );
 			}
 
+			// Limpiar caché de opcode de PHP para asegurar que el archivo se lea correctamente
+			if ( function_exists( 'opcache_invalidate' ) ) {
+				opcache_invalidate( JVM_JSON_FILE, true );
+			}
+			
+			// Limpiar caché de WordPress
+			wp_cache_flush();
+
 			// Validar que el JSON guardado es válido
+			// Forzar lectura del archivo recién guardado (sin caché)
+			clearstatcache( true, JVM_JSON_FILE );
 			$saved_content = file_get_contents( JVM_JSON_FILE );
 			$saved_data = json_decode( $saved_content, true );
 			if ( json_last_error() !== JSON_ERROR_NONE ) {
 				throw new Exception( __( 'El JSON guardado no es válido.', 'json-version-manager' ) );
+			}
+			
+			// Verificar que la versión guardada coincide con la enviada
+			if ( isset( $saved_data['version'] ) && $saved_data['version'] !== $json_data['version'] ) {
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( sprintf( 
+						'JSON Version Manager: Versión guardada (%s) no coincide con la enviada (%s)', 
+						$saved_data['version'], 
+						$json_data['version'] 
+					) );
+				}
 			}
 
 			// Guardar también en opciones de WordPress (backup) con manejo de errores
